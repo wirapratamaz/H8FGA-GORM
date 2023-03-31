@@ -15,6 +15,10 @@ func main() {
 	createUser("wirabagus185@gmail.com")
 	getUserById(1)
 	updateUserById(1, "John@gmail.com")
+
+	createProduct(1, "YTL", "YYYY")
+	getUsersWithProduct()
+	deleteProductById(1)
 }
 
 func createUser(email string) {
@@ -65,4 +69,52 @@ func updateUserById(id uint, email string) {
 	}
 
 	fmt.Printf("Update user's email : %+v \n", user.Email)
+}
+
+func createProduct(userId uint, brand string, name string) {
+	db := database.GetDB()
+
+	Product := models.Product{
+		UserID: userId,
+		Brand:  brand,
+		Name:   name,
+	}
+
+	err := db.Create(&Product).Error
+
+	if err != nil {
+		fmt.Println("Error creating product data:", err.Error())
+		return
+	}
+
+	fmt.Println("New Product Data:", Product)
+}
+
+func getUsersWithProduct() {
+	db := database.GetDB()
+
+	users := models.User{}
+	err := db.Preload("Products").Find(&users).Error
+
+	if err != nil {
+		fmt.Println("Error getting user datas with products:", err.Error())
+		return
+	}
+
+	fmt.Println("User Datas with Products")
+	fmt.Printf("%+v", users)
+}
+
+func deleteProductById(id uint) {
+	db := database.GetDB()
+
+	product := models.Product{}
+	err := db.Where("id = ?", id).Delete(&product).Error
+
+	if err != nil {
+		fmt.Println("Error deleting product:", err.Error())
+		return
+	}
+
+	fmt.Printf("Product with id %d has been sucessfully deleted", id)
 }
